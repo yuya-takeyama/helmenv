@@ -12,7 +12,7 @@
 #   helmenv exec tiller -version
 #
 # is equivalent to:
-#   PATH="$HELMENV_ROOT/versions/1.11.3:$PATH" helm version
+#   PATH="$HELMENV_ROOT/versions/1.11.3/bin:$PATH" helm version
 
 set -e
 [ -n "${HELMENV_DEBUG}" ] && set -x
