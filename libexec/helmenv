@@ -1,0 +1,102 @@
+#!/usr/bin/env bash
+set -e
+
+if [ "$1" = "--debug" ]; then
+  export HELMENV_DEBUG=1
+  shift
+fi
+
+if [ -n "$HELMENV_DEBUG" ]; then
+  export PS4='+ [${BASH_SOURCE##*/}:${LINENO}] '
+  set -x
+fi
+
+abort() {
+  { if [ "$#" -eq 0 ]; then cat -
+    else echo "helmenv: $*"
+    fi
+  } >&2
+  exit 1
+}
+
+READLINK=$(type -p greadlink readlink | head -1)
+[ -n "$READLINK" ] || abort "cannot find readlink - are you missing GNU coreutils?"
+
+resolve_link() {
+  $READLINK "$1"
+}
+
+abs_dirname() {
+  local cwd="$PWD"
+  local path="$1"
+
+  while [ -n "$path" ]; do
+    cd "${path%/*}"
+    local name="${path##*/}"
+    path="$(resolve_link "$name" || true)"
+  done
+
+  pwd
+  cd "$cwd"
+}
+
+if [ -z "${HELMENV_ROOT}" ]; then
+  HELMENV_ROOT="${HOME}/.helmenv"
+else
+  HELMENV_ROOT="${HELMENV_ROOT%/}"
+fi
+export HELMENV_ROOT
+
+if [ -z "${HELMENV_DIR}" ]; then
+  HELMENV_DIR="$PWD"
+else
+  [[ $HELMENV_DIR == /* ]] || HELMENV_DIR="$PWD/$HELMENV_DIR"
+  cd "$HELMENV_DIR" 2>/dev/null || abort "cannot change working directory to \`$HELMENV_DIR'"
+  HELMENV_DIR="$PWD"
+  cd "$OLDPWD"
+fi
+export HELMENV_DIR
+
+
+shopt -s nullglob
+
+bin_path="$(abs_dirname "$0")"
+export PATH="${bin_path}:${PATH}"
+
+shopt -u nullglob
+
+command="$1"
+case "$command" in
+"" )
+  { helmenv---version
+    helmenv-help
+  } | abort
+  ;;
+-v | --version )
+  exec helmenv---version
+  ;;
+-h | --help )
+  exec helmenv-help
+  ;;
+* )
+  command_path="$(command -v "helmenv-$command" || true)"
+  if [ -z "$command_path" ]; then
+    if [ "$command" == "shell" ]; then
+      abort "shell integration not enabled. Run \`helmenv init' for instructions."
+    else
+      abort "no such command \`$command'"
+    fi
+  fi
+
+  shift 1
+  if [ "$1" = --help ]; then
+    if [[ "$command" == "sh-"* ]]; then
+      echo "helmenv help \"$command\""
+    else
+      exec helmenv-help "$command"
+    fi
+  else
+    exec "$command_path" "$@"
+  fi
+  ;;
+esac

@@ -1,0 +1,5 @@
+#!/usr/bin/env bash
+set -e
+[ -n "$HELMENV_DEBUG" ] && set -x
+
+exec "$(dirname `which $0`)/../bin/helmenv" exec tiller "$@"

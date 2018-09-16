@@ -1,0 +1,77 @@
+#!/usr/bin/env bash
+# Summary: List all helm versions available to helmenv
+# Usage: helmenv versions [--bare] [--skip-aliases]
+#
+# Lists all helm versions found in `$HELMENV_ROOT/versions/*'.
+
+set -e
+[ -n "$HELMENV_DEBUG" ] && set -x
+
+unset bare
+unset skip_aliases
+# Provide helmenv completions
+for arg; do
+  case "$arg" in
+  --complete )
+    echo --bare
+    echo --skip-aliases
+    exit ;;
+  --bare ) bare=1 ;;
+  --skip-aliases ) skip_aliases=1 ;;
+  * )
+    helmenv-help --usage versions >&2
+    exit 1
+    ;;
+  esac
+done
+
+versions_dir="${HELMENV_ROOT}/versions"
+
+if [ -d "$versions_dir" ]; then
+  versions_dir="$(realpath "$versions_dir")"
+fi
+
+if [ -n "$bare" ]; then
+  hit_prefix=""
+  miss_prefix=""
+  current_version=""
+  include_system=""
+else
+  hit_prefix="* "
+  miss_prefix="  "
+  current_version="$(helmenv-version-name || true)"
+  include_system="1"
+fi
+
+num_versions=0
+
+print_version() {
+  if [ "$1" == "$current_version" ]; then
+    echo "${hit_prefix}$(helmenv-version 2>/dev/null)"
+  else
+    echo "${miss_prefix}$1"
+  fi
+  num_versions=$((num_versions + 1))
+}
+
+# Include "system" in the non-bare output, if it exists
+if [ -n "$include_system" ] && echo "$(HELMENV_VERSION=system helmenv-bin-path)/helm" >/dev/null 2>&1; then
+  print_version system
+fi
+
+shopt -s nullglob
+for path in "$versions_dir"/*; do
+  if [ -d "$path" ]; then
+    if [ -n "$skip_aliases" ] && [ -L "$path" ]; then
+      target="$(realpath "$path")"
+      [ "${target%/*}" != "$versions_dir" ] || continue
+    fi
+    print_version "${path##*/}"
+  fi
+done
+shopt -u nullglob
+
+if [ "$num_versions" -eq 0 ] && [ -n "$include_system" ]; then
+  echo "Warning: no helm detected on the system" >&2
+  exit 1
+fi

@@ -1,0 +1,31 @@
+#!/usr/bin/env bash
+#
+# Summary: Set or show the global helm version
+#
+# Usage: helmenv global <version>
+#
+# Sets the global helm version. You can override the global version at
+# any time by setting a directory-specific version with `helmenv local'
+# or by setting the `HELMENV_VERSION' environment variable.
+#
+# <version> should be a string matching a helm version known to helmenv.
+# The special version string `system' will use your default system helm.
+# Run `helmenv versions' for a list of available helm versions.
+
+set -e
+[ -n "$HELMENV_DEBUG" ] && set -x
+
+# Provide helmenv completions
+if [ "$1" = "--complete" ]; then
+  echo system
+  exec helmenv-versions --bare
+fi
+
+HELMENV_VERSION="$1"
+HELMENV_VERSION_FILE="${HELMENV_ROOT}/version"
+
+if [ -n "$HELMENV_VERSION" ]; then
+  helmenv-version-file-write "$HELMENV_VERSION_FILE" "$HELMENV_VERSION"
+else
+  helmenv-version-file-read "$HELMENV_VERSION_FILE" || echo system
+fi

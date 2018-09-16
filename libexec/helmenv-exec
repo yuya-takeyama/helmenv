@@ -1,0 +1,39 @@
+#!/usr/bin/env bash
+#
+# Summary: Run helm with the selected version
+#
+# Usage: helmenv exec <command> [arg1 arg2...]
+#
+# Runs helm or tiller by first preparing PATH so that the selected
+# version's `bin' directory is at the front.
+#
+# For example, if the currently selected helm version is 1.11.3:
+#   helmenv exec helm version
+#   helmenv exec tiller -version
+#
+# is equivalent to:
+#   PATH="$HELMENV_ROOT/versions/1.11.3:$PATH" helm version
+
+set -e
+[ -n "${HELMENV_DEBUG}" ] && set -x
+
+export CMD=$1
+if [ -z "${CMD}" ]; then
+  echo "helmenv: command is not specified" >&2
+  exit 1
+fi
+
+shift
+
+export BIN_PATH=$(helmenv-bin-path)
+if [ -z "${BIN_PATH}" ]; then
+  exit 1
+fi
+
+export CMD_FULL="${BIN_PATH}/${CMD}"
+if [ ! -x "${CMD_FULL}" ]; then
+  echo "helmenv: command not found: ${CMD}" >&2
+  exit 1
+fi
+
+exec "${CMD_FULL}" "${@}"

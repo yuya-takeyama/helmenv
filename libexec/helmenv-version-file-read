@@ -1,0 +1,20 @@
+#!/usr/bin/env bash
+# Usage: helmenv version-file-read <file>
+set -e
+[ -n "$HELMENV_DEBUG" ] && set -x
+
+VERSION_FILE="$1"
+
+if [ -e "$VERSION_FILE" ]; then
+  # Read the first word from the specified version file. Avoid reading it whole.
+  IFS="${IFS}"$'\r'
+  words=( $(cut -b 1-1024 "$VERSION_FILE") )
+  version="${words[0]}"
+
+  if [ -n "$version" ]; then
+    echo "$version"
+    exit
+  fi
+fi
+
+exit 1

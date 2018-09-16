@@ -1,0 +1,19 @@
+#!/usr/bin/env bash
+# Usage: helmenv version-file-write <file> <version>
+
+set -e
+[ -n "$HELMENV_DEBUG" ] && set -x
+
+HELMENV_VERSION_FILE="$1"
+HELMENV_VERSION="$2"
+
+if [ -z "$HELMENV_VERSION" ] || [ -z "$HELMENV_VERSION_FILE" ]; then
+  helmenv-help --usage version-file-write >&2
+  exit 1
+fi
+
+# Make sure the specified version is installed.
+helmenv-bin-path "$HELMENV_VERSION" > /dev/null
+
+# Write the version out to disk.
+echo "$HELMENV_VERSION" > "$HELMENV_VERSION_FILE"

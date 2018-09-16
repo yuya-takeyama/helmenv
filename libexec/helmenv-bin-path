@@ -1,0 +1,46 @@
+#!/usr/bin/env bash
+# Summary: Display the directory where helm exists
+# Usage: helmenv bin-path
+#
+# Displays the directory where helm is installed.
+
+set -e
+[ -n "$HELMENV_DEBUG" ] && set -x
+
+remove_from_path() {
+  local path_to_remove="$1"
+  local path_before
+  local result=":${PATH//\~/$HOME}:"
+  while [ "$path_before" != "$result" ]; do
+    path_before="$result"
+    result="${result//:$path_to_remove:/:}"
+  done
+  result="${result%:}"
+  echo "${result#:}"
+}
+
+if [ -n "$1" ]; then
+  export HELMENV_VERSION="$1"
+elif [ -z "$HELMENV_VERSION" ]; then
+  HELMENV_VERSION="$(helmenv-version-name)"
+fi
+
+if [ "$HELMENV_VERSION" = "system" ]; then
+  SYSTEM_HELM_PATH=$(PATH="$(remove_from_path "${HELMENV_ROOT}/bin")" command -v helm)
+  if HELM_BIN_PATH="${SYSTEM_HELM_PATH}"; then
+    HELM_BIN_PATH="${SYSTEM_HELM_PATH%/*}"
+    echo "${HELM_BIN_PATH:-/}"
+    exit
+  else
+    echo "helmenv: system version not found in PATH" >&2
+    exit 1
+  fi
+fi
+
+HELMENV_BIN_PATH="${HELMENV_ROOT}/versions/${HELMENV_VERSION}/bin"
+if [ ! -d "$HELMENV_BIN_PATH" ]; then
+  echo "helmenv: version \`${HELMENV_VERSION}' is not installed" >&2
+  exit 1
+fi
+
+echo "$HELMENV_BIN_PATH"

@@ -1,0 +1,28 @@
+#!/usr/bin/env bash
+# Usage: helmenv uninstall <version>
+# Summary: Uninstall the specified version of helm
+
+[ -n "${HELMENV_DEBUG}" ] && set -x
+source ${HELMENV_ROOT}/libexec/helpers.sh
+
+[ ${#} -gt 1 ] && error_and_die "usage: helmenv uninstall [<version>]"
+
+declare version
+
+if [ -z "${1}" ]; then
+  version_file="$(helmenv-version-file)"
+  if [ "${version_file}" != "${HELMENV_ROOT}/version" ];then
+    version="$(cat ${version_file} || true)"
+  fi
+else
+  version="${1}"
+fi
+
+[ -n "${version}" ] || error_and_die "Version is not specified"
+
+dst_path="${HELMENV_ROOT}/versions/${version}"
+if [ -f "${dst_path}/helm" ]; then 
+  info "Uninstall helm v${version}"
+  rm -r "${dst_path}"
+  info "\033[0;32mhelm v${version} is successfully uninstalled\033[0;39m"
+fi

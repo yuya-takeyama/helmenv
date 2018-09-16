@@ -1,0 +1,28 @@
+#!/usr/bin/env bash
+# Summary: Show the current helm version
+set -e
+[ -n "$HELMENV_DEBUG" ] && set -x
+
+if [ -z "$HELMENV_VERSION" ]; then
+  HELMENV_VERSION_FILE="$(helmenv-version-file)"
+  HELMENV_VERSION="$(helmenv-version-file-read "$HELMENV_VERSION_FILE" || true)"
+fi
+
+if [ -z "$HELMENV_VERSION" ] || [ "$HELMENV_VERSION" = "system" ]; then
+  echo "system"
+  exit
+fi
+
+version_exists() {
+  local version="$1"
+  [ -d "${HELMENV_ROOT}/versions/${version}" ]
+}
+
+if version_exists "$HELMENV_VERSION"; then
+  echo "$HELMENV_VERSION"
+elif version_exists "${HELMENV_VERSION#helm-}"; then
+  echo "${HELMENV_VERSION#helm-}"
+else
+  echo "helmenv: version \`$HELMENV_VERSION' is not installed (set by $(helmenv-version-origin))" >&2
+  exit 1
+fi

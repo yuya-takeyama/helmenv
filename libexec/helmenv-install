@@ -1,0 +1,36 @@
+#!/usr/bin/env bash
+# Usage: helmenv install <version>
+# Summary: Install the specified version of helm
+
+[ -n "${HELMENV_DEBUG}" ] && set -x
+source ${HELMENV_ROOT}/libexec/helpers.sh
+
+[ "${#}" -gt 1 ] && error_and_die "usage: helmenv install [<version>]"
+
+declare version
+
+if [ -z "${1}" ]; then
+  version_file="$(helmenv-version-file)"
+  if [ "${version_file}" != "${HELMENV_ROOT}/version" ]; then
+    version="$(cat ${version_file} || true)"
+  fi
+else
+  version="${1}"
+fi
+
+dst_path="${HELMENV_ROOT}/versions/${version}/bin"
+if [ -f "${dst_path}/helm" ]; then
+  echo "helm v${version} is already installed"
+  exit 0
+fi
+
+info "Installing helm v${version}"
+mkdir -p "${dst_path}" || error_and_die "Failed to make directory ${dst_path}"
+
+# Use fork until these Pull Requests got merged:
+# - https://github.com/helm/helm/pull/4648
+# - https://github.com/helm/helm/pull/4649
+curl -f https://raw.githubusercontent.com/yuya-takeyama/helm/installer-cherry-picks/scripts/get | \
+  HELM_INSTALL_DIR="$dst_path" bash -s - --version "v${version}" --no-sudo >&2 || error_and_die "Install failed"
+
+info "Installation of helm v${version} successful"

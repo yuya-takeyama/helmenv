@@ -1,0 +1,45 @@
+#!/usr/bin/env bash
+#
+# Summary: Set or show the local application-specific helm version
+#
+# Usage: helmenv local <version>
+#        helmenv local --unset
+#
+# Sets the local application-specific helm version by writing the
+# version name to a file named `.helm-version'.
+#
+# When you run a helm command, helmenv will look for a `.helm-version'
+# file in the current directory and each parent directory. If no such
+# file is found in the tree, helmenv will use the global helm version
+# specified with `helmenv global'. A version specified with the
+# `HELMENV_VERSION' environment variable takes precedence over local
+# and global versions.
+#
+# <version> should be a string matching a helm version known to helmenv.
+# The special version string `system' will use your default system helm.
+# Run `helmenv versions' for a list of available helm versions.
+
+set -e
+[ -n "$HELMENV_DEBUG" ] && set -x
+
+# Provide helmenv completions
+if [ "$1" = "--complete" ]; then
+  echo --unset
+  echo system
+  exec helmenv-versions --bare
+fi
+
+HELMENV_VERSION="$1"
+
+if [ "$HELMENV_VERSION" = "--unset" ]; then
+  rm -f .helm-version
+elif [ -n "$HELMENV_VERSION" ]; then
+  helmenv-version-file-write .helm-version "$HELMENV_VERSION"
+else
+  if version_file="$(helmenv-version-file "$PWD")"; then
+    helmenv-version-file-read "$version_file"
+  else
+    echo "helmenv: no local version configured for this directory" >&2
+    exit 1
+  fi
+fi

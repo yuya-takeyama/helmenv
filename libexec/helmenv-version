@@ -1,0 +1,10 @@
+#!/usr/bin/env bash
+# Summary: Show the current helm version and its origin
+#
+# Shows the currently selected helm version and how it was selected.
+# To obtain only the version string, use `helmenv version-name'.
+
+set -e
+[ -n "$HELMENV_DEBUG" ] && set -x
+
+echo "$(helmenv-version-name) (set by $(helmenv-version-origin))"
