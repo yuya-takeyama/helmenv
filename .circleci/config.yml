@@ -1,0 +1,11 @@
+version: 2
+jobs:
+  build:
+    working_directory: /helmenv
+    docker:
+    - image: yuyat/bats
+    steps:
+    - checkout
+    - run:
+        name: Test
+        command: ./test/run
