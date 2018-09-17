@@ -27,10 +27,7 @@ fi
 info "Installing helm v${version}"
 mkdir -p "${dst_path}" || error_and_die "Failed to make directory ${dst_path}"
 
-# Use fork until these Pull Requests got merged:
-# - https://github.com/helm/helm/pull/4648
-# - https://github.com/helm/helm/pull/4649
-curl -f https://raw.githubusercontent.com/yuya-takeyama/helm/installer-cherry-picks/scripts/get | \
+curl -f https://raw.githubusercontent.com/helm/helm/master/scripts/get | \
   HELM_INSTALL_DIR="$dst_path" bash -s - --version "v${version}" --no-sudo >&2 || error_and_die "Install failed"
 
 info "Installation of helm v${version} successful"
