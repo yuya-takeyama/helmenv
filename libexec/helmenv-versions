@@ -6,6 +6,7 @@
 
 set -e
 [ -n "$HELMENV_DEBUG" ] && set -x
+source ${HELMENV_ROOT}/libexec/helpers.sh
 
 unset bare
 unset skip_aliases
