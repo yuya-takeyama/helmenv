@@ -41,7 +41,7 @@ abs_dirname() {
 }
 
 if [ -z "${HELMENV_ROOT}" ]; then
-  HELMENV_ROOT="${HOME}/.helmenv"
+  HELMENV_ROOT="$(cd "$(dirname "$(readlink_f "${0}")")/.." && pwd)"
 else
   HELMENV_ROOT="${HELMENV_ROOT%/}"
 fi
