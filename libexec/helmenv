@@ -40,8 +40,22 @@ abs_dirname() {
   cd "$cwd"
 }
 
+# http://stackoverflow.com/questions/1055671/how-can-i-get-the-behavior-of-gnus-readlink-f-on-a-mac
+readlink_f() {
+  local target_file="${1}"
+  local file_name
+
+  while [ "${target_file}" != "" ]; do
+    cd "$(dirname ${target_file})"
+    file_name="$(basename "${target_file}")"
+    target_file="$(readlink "${file_name}")"
+  done
+
+  echo "$(pwd -P)/${file_name}"
+}
+
 if [ -z "${HELMENV_ROOT}" ]; then
-  HELMENV_ROOT="${HOME}/.helmenv"
+  HELMENV_ROOT="$(cd "$(dirname "$(readlink_f "${0}")")/.." && pwd)"
 else
   HELMENV_ROOT="${HELMENV_ROOT%/}"
 fi
