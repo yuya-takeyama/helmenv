@@ -30,6 +30,7 @@ Some useful helmenv commands are:
    local       Set or show the local application-specific Helm version
    global      Set or show the global Helm version
    install     Install the specified version of Helm
+   list-remote List all installable versions
    uninstall   Uninstall the specified version of Helm
    version     Show the current Helm version and its origin
    versions    List all Helm versions available to helmenv

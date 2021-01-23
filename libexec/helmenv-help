@@ -143,7 +143,7 @@ if [ -z "$1" ] || [ "$1" == "helmenv" ]; then
   [ -z "$usage" ] || exit
   echo
   echo "Some useful helmenv commands are:"
-  print_summaries local global install uninstall version versions
+  print_summaries local global install uninstall version versions list-remote
   echo
   echo "See \`helmenv help <command>' for information on a specific command."
   echo "For full documentation, see: https://github.com/yuya-takeyama/helmenv#readme"
