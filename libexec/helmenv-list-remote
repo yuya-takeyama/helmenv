@@ -1,0 +1,8 @@
+#!/usr/bin/env bash
+# Usage: helmenv list-remote
+# Summary: List all installable versions
+
+versions_url="https://api.github.com/repos/helm/helm/releases?per_page=100"
+versions="$(curl -s "$versions_url" | jq -r ".[].tag_name" | grep -v "rc\\|beta\\|alpha" | sort -r --version-sort)"
+
+echo "$versions"
