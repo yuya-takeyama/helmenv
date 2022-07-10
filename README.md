@@ -1,3 +1,12 @@
+**🛑Archived: I'm no longer maintaining 🛑**
+
+As an alternative, I recommend the following softwares:
+
+* [asdf-helm](https://github.com/Antiarchitect/asdf-helm)
+* [aqua](https://github.com/aquaproj/aqua)
+
+Or, if you wish to continue maintenance yourself, fork this according to the license.
+
 # helmenv
 
 [Helm](https://helm.sh) version manager.
